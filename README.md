@@ -1,9 +1,8 @@
 # CS771
 These are the group assignments of the Course CS771 offered by Purushottam Kar
 
-Assign1- Used the scikit-learn library to train a Linear Support Vector Classifier (LinearSVC) on the provided training data\
+Assign1- Used the scikit-learn library to train a Linear Support Vector Classifier (LinearSVC) on the provided training data
 
-Assign2- Implemented Decision tree
 
 (More details are there in the respective folder)
 # Other Works
