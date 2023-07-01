@@ -67,13 +67,10 @@ class Node:
 		split_dict = {}
 		if len( history ) == 0:
 			query_idx = -1
-			query = ""
 		else:
-			query_idx = self.get_query_idx(all_words, my_words_idx)
-			query = all_words[ query_idx ]
-
+			query_idx = self.get_query_idx()
 			
-		split_dict = self.split(all_words, my_words_idx, query)
+		split_dict = self.split( query_idx )
 		
 		if len( split_dict.items() ) < 2 and verbose:
 			print( "Warning: did not make any meaningful split with this query!" )
@@ -112,34 +109,50 @@ class Node:
 				
 				self.children[ response ].fit( self.all_words, split, min_leaf_size, max_depth, fmt_str, verbose )		
 	
-	def split(self, all_words, my_words_idx, query):
+	def split( self, query_idx ):
 		split_dict = {}
-		
-		for idx in my_words_idx:
-			mask = self.reveal( all_words[ idx ], query )
+		if query_idx == -1:
+			query = ""
+		else:
+			query = self.all_words[ query_idx ]
+		for idx in self.my_words_idx:
+			mask = self.reveal( self.all_words[ idx ], query )
 			if mask not in split_dict:
 				split_dict[ mask ] = []
 			
 			split_dict[ mask ].append( idx )
 		return split_dict
   
-	def get_query_idx( self, all_words, my_words_idx ):
+	def get_query_idx( self ):
 		max_entropy = 0
-		query_idx = -1
-		for idx in my_words_idx:
-			new_split = self.split(all_words, my_words_idx, all_words[idx])
-			entropy = self.compute_entropy(new_split)
-			if entropy > max_entropy:
-				max_entropy = entropy
+		min_gini = 1
+		for idx in self.my_words_idx:
+			query_idx = idx
+			new_split = self.split( idx )
+			# entropy = self.compute_entropy(new_split, my_words_idx)
+			# if entropy > max_entropy:
+			# 	max_entropy = entropy
+			# 	query_idx = idx
+			gini = self.compute_gini_index( new_split )
+			if gini < min_gini:
+				min_gini = gini
 				query_idx = idx
 		
 		return query_idx
 			
 
-	def compute_entropy( self, split ):
-		entropy = 0.0
-		total_words = len(self.my_words_idx)
+	def compute_entropy( self, split, my_words_idx ):
+		entropy = 0
+		total_words = len(my_words_idx)
 		for s in split:
 			p = len(s) / total_words
 			entropy -= p * math.log(p)
 		return entropy
+
+	def compute_gini_index( self, split ):
+		gini = 1
+		total_words = len(self.my_words_idx)
+		for s in split:
+			p = len(s) / total_words
+			gini -= p*p
+		return gini
